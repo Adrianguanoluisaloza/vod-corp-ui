@@ -1,0 +1,194 @@
+/* ============================================================
+   VOD Corp — Animations
+   Keyframes extraídos de tw-animate-css (MIT)
+   github.com/Wombosvideo/tw-animate-css
+   + animaciones de entrada tipo Framer Motion stagger
+   ============================================================ */
+
+/* ── Respeto por preferencias de accesibilidad ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ================================================================
+   KEYFRAMES BASE (tw-animate-css)
+================================================================ */
+
+/* Entrada genérica */
+@keyframes enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform:
+      translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0)
+      scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1))
+      rotate(var(--tw-enter-rotate, 0));
+  }
+}
+
+/* Salida genérica */
+@keyframes exit {
+  to {
+    opacity: var(--tw-exit-opacity, 1);
+    transform:
+      translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0)
+      scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1))
+      rotate(var(--tw-exit-rotate, 0));
+  }
+}
+
+/* Fade up — patrón principal del repo (Framer Motion: y:30→0, opacity:0→1) */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Fade in simple */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Slide in desde la izquierda (sidebar) */
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide in desde arriba (topbar, breadcrumb) */
+@keyframes slide-in-top {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scale in (stats, badges) */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Pulse suave para el badge NUEVO */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* Shimmer (skeleton loading placeholder) */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+/* Caret blink (tw-animate-css) */
+@keyframes caret-blink {
+  0%, 70%, 100% { opacity: 1; }
+  20%, 50%      { opacity: 0; }
+}
+
+/* ================================================================
+   CLASES DE ANIMACIÓN REUTILIZABLES
+================================================================ */
+
+/* ── Fade up — entrada estándar de pantalla ── */
+.animate-fade-up {
+  animation: fade-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Fade in ── */
+.animate-fade-in {
+  animation: fade-in 0.25s ease both;
+}
+
+/* ── Slide desde izquierda ── */
+.animate-slide-left {
+  animation: slide-in-left 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Slide desde arriba ── */
+.animate-slide-top {
+  animation: slide-in-top 0.25s ease both;
+}
+
+/* ── Scale in ── */
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Pulse suave para badge ── */
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* ── Caret blink ── */
+.animate-caret-blink {
+  animation: caret-blink 1.25s ease-out infinite;
+}
+
+/* ================================================================
+   STAGGER — delays para listas de cards (como list-animation.tsx)
+   Replica: transition={{ duration: 0.4, delay: index * 0.1 }}
+================================================================ */
+.stagger-1  { animation-delay: 0ms; }
+.stagger-2  { animation-delay: 60ms; }
+.stagger-3  { animation-delay: 120ms; }
+.stagger-4  { animation-delay: 180ms; }
+.stagger-5  { animation-delay: 240ms; }
+.stagger-6  { animation-delay: 300ms; }
+.stagger-7  { animation-delay: 360ms; }
+.stagger-8  { animation-delay: 420ms; }
+
+/* ================================================================
+   TRANSICIONES DE HOVER (Tailwind transition patterns del repo)
+================================================================ */
+
+/* Card hover — scale suave */
+.hover-card {
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.hover-card:hover {
+  transform: translateY(-2px) scale(1.005);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Botón con micro-bounce */
+.hover-bounce {
+  transition: transform 0.1s ease;
+}
+.hover-bounce:active {
+  transform: scale(0.97);
+}
+
+/* Nav item con slide */
+.hover-nav {
+  transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease;
+}
+.hover-nav:hover {
+  padding-left: 1.1rem;
+}
+
+/* Progress fill animada al aparecer */
+.progress-animated {
+  animation: progress-grow 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.3s;
+}
+@keyframes progress-grow {
+  from { width: 0 !important; }
+}
+
+/* ================================================================
+   SKELETON LOADER
+================================================================ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--accent)) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: calc(var(--radius) - 2px);
+}

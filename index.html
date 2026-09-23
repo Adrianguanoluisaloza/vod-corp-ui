@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VOD Corp — Boceto UI</title>
+
+  <!-- Tailwind (darkMode: class) -->
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwindConfig = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Geist', 'system-ui', 'sans-serif'], mono: ['GeistMono', 'monospace'] },
+          colors: {
+            border:      'hsl(var(--border))',
+            input:       'hsl(var(--input))',
+            ring:        'hsl(var(--ring))',
+            background:  'hsl(var(--background))',
+            foreground:  'hsl(var(--foreground))',
+            primary:     { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+            secondary:   { DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))' },
+            muted:       { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+            accent:      { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+            destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+            card:        { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+            sidebar:     'hsl(var(--sidebar))',
+          },
+          borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' },
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>tailwind.config = window.tailwindConfig;</script>
+
+  <!-- Design system -->
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+</head>
+<body>
+
+<!-- ================================================================
+  PANEL DE NAVEGACIÓN FLOTANTE
+================================================================ -->
+<div class="fixed bottom-4 right-4 z-50">
+  <div class="card p-3 shadow-2xl w-44">
+    <div class="flex items-center justify-between mb-2 px-1">
+      <p class="text-xs font-semibold uppercase tracking-widest" style="color:hsl(var(--muted-foreground))">Pantallas</p>
+      <button onclick="toggleTheme()" class="btn btn-ghost btn-icon" style="width:1.75rem;height:1.75rem;padding:0.25rem" title="Cambiar tema">
+        <span class="icon-sun" data-icon="sun"></span>
+        <span class="icon-moon" data-icon="moon"></span>
+      </button>
+    </div>
+    <nav class="flex flex-col gap-0.5">
+      <button onclick="show('login')"     id="nav-login"     class="nav-item text-xs">🔐 Login</button>
+      <button onclick="show('home')"      id="nav-home"      class="nav-item text-xs">🏠 Home</button>
+      <button onclick="show('catalog')"   id="nav-catalog"   class="nav-item text-xs">📚 Catálogo</button>
+      <button onclick="show('player')"    id="nav-player"    class="nav-item text-xs">▶️ Player</button>
+      <button onclick="show('publish')"   id="nav-publish"   class="nav-item text-xs">📤 Publicar</button>
+      <button onclick="show('analytics')" id="nav-analytics" class="nav-item text-xs">📊 Analítica</button>
+      <button onclick="show('admin')"     id="nav-admin"     class="nav-item text-xs">⚙️ Admin</button>
+      <button onclick="show('error403')"  id="nav-error403"  class="nav-item text-xs">🚫 403</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ================================================================
+  TEMPLATE: SIDEBAR
+================================================================ -->
+<template id="tpl-sidebar">
+  <aside class="sidebar-width flex flex-col min-h-screen shrink-0 border-r border-border" style="background:hsl(var(--sidebar))">
+    <!-- Brand -->
+    <div class="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0">
+      <!-- Logo modo claro -->
+      <img src="assets/images/logos/logoicon.svg" alt="VOD Corp" class="logo-light w-7 h-7" />
+      <!-- Logo modo oscuro -->
+      <img src="assets/images/logos/logoicon-dark.svg" alt="VOD Corp" class="logo-dark w-7 h-7" />
+      <span class="font-semibold text-sm">VOD Corp</span>
+    </div>
+
+    <!-- Nav -->
+    <div class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest px-3 mb-2" style="color:hsl(var(--muted-foreground))">Principal</p>
+        <div class="space-y-0.5">
+          <button class="nav-item active" onclick="show('home')">
+            <span data-icon="home"></span>
+            Inicio
+          </button>
+          <button class="nav-item" onclick="show('catalog')">
+            <span data-icon="library"></span>
+            Bibliotecas
+          </button>
+          <button class="nav-item" onclick="show('player')">
+            <span data-icon="play"></span>
+            Reproducción
+          </button>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest px-3 mb-2" style="color:hsl(var(--muted-foreground))">Gestión</p>
+        <div class="space-y-0.5">
+          <button class="nav-item" onclick="show('publish')">
+            <span data-icon="upload"></span>
+            Publicar video
+          </button>
+          <button class="nav-item" onclick="show('analytics')">
+            <span data-icon="barChart"></span>
+            Analítica
+          </button>
+          <button class="nav-item" onclick="show('admin')">
+            <span data-icon="users"></span>
+            Usuarios
+          </button>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest px-3 mb-2" style="color:hsl(var(--muted-foreground))">Mis bibliotecas</p>
+        <div class="space-y-0.5">
+          <button class="nav-item" onclick="show('catalog')"><span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>Capacitación</button>
+          <button class="nav-item" onclick="show('catalog')"><span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>Comunicaciones</button>
+          <button class="nav-item" onclick="show('catalog')"><span class="w-2 h-2 rounded-full bg-violet-500 shrink-0"></span>Eventos</button>
+          <button class="nav-item opacity-40 cursor-not-allowed" onclick="show('error403')"><span data-icon="lock" class="shrink-0"></span>Pruebas</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- User -->
+    <div class="border-t border-border px-3 py-3 shrink-0">
+      <div class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-accent cursor-pointer transition-all">
+        <div class="avatar avatar-lg bg-blue-600">
+          <img src="assets/images/avatars/user-1.png" alt="María González" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium truncate">María González</p>
+          <p class="text-xs truncate" style="color:hsl(var(--muted-foreground))">Capacitación</p>
+        </div>
+        <button onclick="show('login')" class="btn btn-ghost btn-icon shrink-0" style="color:hsl(var(--muted-foreground))">
+          <span data-icon="logOut"></span>
+        </button>
+      </div>
+    </div>
+  </aside>
+</template>
+
+<!-- ================================================================
+  TEMPLATE: TOPBAR
+================================================================ -->
+<template id="tpl-topbar">
+  <header class="h-14 border-b border-border flex items-center justify-between px-6 shrink-0" style="background:hsl(var(--background))">
+    <div class="flex items-center gap-3">
+      <img src="assets/images/logos/logoicon.svg" alt="" class="logo-light w-5 h-5" />
+      <img src="assets/images/logos/logoicon-dark.svg" alt="" class="logo-dark w-5 h-5" />
+      <span class="font-semibold text-sm">VOD Corp</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="toggleTheme()" class="btn btn-ghost btn-icon" title="Cambiar tema">
+        <span class="icon-sun" data-icon="sun"></span>
+        <span class="icon-moon" data-icon="moon"></span>
+      </button>
+      <div class="avatar bg-blue-600">
+        <img src="assets/images/avatars/user-1.png" alt="María González" />
+      </div>
+      <div class="hidden sm:block">
+        <p class="text-sm font-medium leading-tight">María González</p>
+        <p class="text-xs" style="color:hsl(var(--muted-foreground))">Capacitación</p>
+      </div>
+      <button onclick="show('login')" class="btn btn-ghost btn-icon ml-1">
+        <span data-icon="logOut"></span>
+      </button>
+    </div>
+  </header>
+</template>
+
+<!-- ================================================================
+  PANTALLA 1 — LOGIN
+================================================================ -->
+<div id="screen-login" class="screen active min-h-screen">
+  <div class="flex flex-1 w-full">
+    <!-- Panel izquierdo -->
+    <div class="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden border-r border-border" style="background:hsl(var(--sidebar))">
+      <div>
+        <div class="flex items-center gap-3 mb-12">
+          <img src="assets/images/logos/logoicon.svg" alt="" class="logo-light w-9 h-9" />
+          <img src="assets/images/logos/logoicon-dark.svg" alt="" class="logo-dark w-9 h-9" />
+          <span class="font-bold text-lg">VOD Corp</span>
+        </div>
+        <blockquote>
+          <p class="text-xl font-medium leading-relaxed">
+            "Plataforma privada de video para 5.000 colaboradores en 15 países. Capacitaciones, comunicaciones y eventos en un solo lugar."
+          </p>
+          <footer class="mt-6 text-sm" style="color:hsl(var(--muted-foreground))">
+            Grupo 4 · Universidad Técnica Luis Vargas Torres
+          </footer>
+        </blockquote>
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="card p-4 text-center">
+          <p class="text-2xl font-black">5.000</p>
+          <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">empleados</p>
+        </div>
+        <div class="card p-4 text-center">
+          <p class="text-2xl font-black">15</p>
+          <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">países</p>
+        </div>
+        <div class="card p-4 text-center">
+          <p class="text-2xl font-black">4</p>
+          <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">bibliotecas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="flex-1 flex items-center justify-center p-8">
+      <div class="w-full max-w-sm space-y-6">
+        <div class="space-y-2 text-center">
+          <div class="lg:hidden flex justify-center mb-4">
+            <img src="assets/images/logos/logoicon.svg" alt="" class="logo-light w-10 h-10" />
+            <img src="assets/images/logos/logoicon-dark.svg" alt="" class="logo-dark w-10 h-10" />
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight">Iniciar sesión</h1>
+          <p class="text-sm" style="color:hsl(var(--muted-foreground))">Accede con tu cuenta corporativa</p>
+        </div>
+
+        <form onsubmit="event.preventDefault(); show('home')" class="space-y-4">
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Correo electrónico</label>
+            <input type="email" placeholder="nombre@empresa.com" class="input" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Contraseña</label>
+            <input type="password" placeholder="••••••••" class="input" />
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <label class="flex items-center gap-2 cursor-pointer" style="color:hsl(var(--muted-foreground))">
+              <input type="checkbox" class="w-4 h-4 rounded border-border accent-current" />
+              Recordarme
+            </label>
+            <span class="text-xs" style="color:hsl(var(--muted-foreground))">Sesión: 30 min</span>
+          </div>
+          <button type="submit" class="btn btn-default w-full">Iniciar sesión</button>
+        </form>
+
+        <div class="separator"></div>
+
+        <div class="space-y-2">
+          <p class="text-center text-xs" style="color:hsl(var(--muted-foreground))">Acceso rápido por rol (boceto)</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="show('home')" class="btn btn-secondary btn-sm text-xs">👤 Empleado</button>
+            <button onclick="show('home')" class="btn btn-secondary btn-sm text-xs">🎓 Capacitación</button>
+            <button onclick="show('home')" class="btn btn-secondary btn-sm text-xs">👥 RR. HH.</button>
+            <button onclick="show('home')" class="btn btn-secondary btn-sm text-xs">🔑 Admin</button>
+          </div>
+        </div>
+
+        <p class="text-center text-xs" style="color:hsl(var(--muted-foreground))">Plataforma de uso interno · acceso restringido</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+  PANTALLA 2 — HOME
+================================================================ -->
+<div id="screen-home" class="screen min-h-screen w-full">
+  <div id="sb-home"></div>
+  <div class="flex-1 flex flex-col min-w-0">
+    <div id="tb-home"></div>
+    <main class="flex-1 p-6 space-y-6 overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">Inicio</h1>
+          <p class="text-sm mt-1" style="color:hsl(var(--muted-foreground))">Bienvenida, María. Aquí está tu actividad reciente.</p>
+        </div>
+        <button onclick="show('publish')" class="btn btn-default btn-sm gap-2">
+          <span data-icon="plus"></span>
+          Publicar video
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-5"><p class="text-xs font-medium uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Videos vistos</p><p class="text-3xl font-black mt-2">12</p><p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">+3 esta semana</p></div>
+        <div class="card p-5"><p class="text-xs font-medium uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Tiempo visto</p><p class="text-3xl font-black mt-2">4.2<span class="text-base font-normal" style="color:hsl(var(--muted-foreground))">h</span></p><p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">Este mes</p></div>
+        <div class="card p-5"><p class="text-xs font-medium uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Completados</p><p class="text-3xl font-black mt-2">8</p><p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">67% de vistos</p></div>
+        <div class="card p-5"><p class="text-xs font-medium uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">En progreso</p><p class="text-3xl font-black mt-2">2</p><p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">Pendientes</p></div>
+      </div>
+
+      <!-- Continuar viendo -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-base font-semibold">Continuar viendo</h2>
+          <span class="text-xs" style="color:hsl(var(--muted-foreground))">2 en progreso</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="card overflow-hidden cursor-pointer hover:border-foreground/30 transition-all group" onclick="show('player')">
+            <div class="aspect-video relative flex items-center justify-center" style="background:hsl(var(--muted))">
+              <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>
+              <span class="absolute top-2 left-2"><span class="badge badge-warning">NUEVO</span></span>
+              <span class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md" style="background:hsl(var(--background)/0.8)">18 min</span>
+              <div class="absolute bottom-0 left-0 right-0"><div class="progress-track" style="border-radius:0"><div class="progress-fill" style="width:34%"></div></div></div>
+            </div>
+            <div class="p-4">
+              <p class="font-medium text-sm leading-tight mb-1">Inducción a la empresa 2026</p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs" style="color:hsl(var(--muted-foreground))">Capacitación · 12 min restantes</span>
+                <span class="text-xs font-semibold">34%</span>
+              </div>
+            </div>
+          </div>
+          <div class="card overflow-hidden cursor-pointer hover:border-foreground/30 transition-all group" onclick="show('player')">
+            <div class="aspect-video relative flex items-center justify-center" style="background:hsl(var(--muted))">
+              <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>
+              <span class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md" style="background:hsl(var(--background)/0.8)">45 min</span>
+              <div class="absolute bottom-0 left-0 right-0"><div class="progress-track" style="border-radius:0"><div class="progress-fill" style="width:49%"></div></div></div>
+            </div>
+            <div class="p-4">
+              <p class="font-medium text-sm leading-tight mb-1">Comunicado Q3 — Dirección General</p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs" style="color:hsl(var(--muted-foreground))">Comunicaciones · 23 min restantes</span>
+                <span class="text-xs font-semibold">49%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bibliotecas -->
+      <div>
+        <h2 class="text-base font-semibold mb-3">Tus bibliotecas</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="card p-5 cursor-pointer hover:border-foreground/30 transition-all" onclick="show('catalog')">
+            <div class="flex items-start justify-between mb-3"><span class="text-2xl">🎓</span><span class="badge badge-warning text-xs">4 nuevos</span></div>
+            <h3 class="font-semibold text-sm mb-1">Capacitación</h3>
+            <p class="text-xs" style="color:hsl(var(--muted-foreground))">23 videos</p>
+            <div class="mt-3 flex items-center justify-between text-xs" style="color:hsl(var(--muted-foreground))">
+              <span>Hoy</span><span data-icon="chevRight"></span>
+            </div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:border-foreground/30 transition-all" onclick="show('catalog')">
+            <div class="flex items-start justify-between mb-3"><span class="text-2xl">📢</span><span class="badge badge-warning text-xs">1 nuevo</span></div>
+            <h3 class="font-semibold text-sm mb-1">Comunicaciones</h3>
+            <p class="text-xs" style="color:hsl(var(--muted-foreground))">11 videos</p>
+            <div class="mt-3 flex items-center justify-between text-xs" style="color:hsl(var(--muted-foreground))">
+              <span>Ayer</span><span data-icon="chevRight"></span>
+            </div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:border-foreground/30 transition-all" onclick="show('catalog')">
+            <div class="flex items-start justify-between mb-3"><span class="text-2xl">📅</span></div>
+            <h3 class="font-semibold text-sm mb-1">Eventos</h3>
+            <p class="text-xs" style="color:hsl(var(--muted-foreground))">8 videos</p>
+            <div class="mt-3 flex items-center justify-between text-xs" style="color:hsl(var(--muted-foreground))">
+              <span>3 días</span><span data-icon="chevRight"></span>
+            </div>
+          </div>
+          <div class="card p-5 cursor-not-allowed" style="opacity:0.4" onclick="show('error403')">
+            <div class="flex items-start justify-between mb-3"><span class="text-2xl">🔒</span></div>
+            <h3 class="font-semibold text-sm mb-1" style="color:hsl(var(--muted-foreground))">Pruebas</h3>
+            <p class="text-xs" style="color:hsl(var(--muted-foreground))">Sin acceso</p>
+            <div class="mt-3 text-xs" style="color:hsl(var(--muted-foreground))">Solo staff</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================================================================
+  PANTALLA 3 — CATÁLOGO
+================================================================ -->
+<div id="screen-catalog" class="screen min-h-screen w-full">
+  <div id="sb-catalog"></div>
+  <div class="flex-1 flex flex-col min-w-0">
+    <div id="tb-catalog"></div>
+    <main class="flex-1 p-6 overflow-y-auto">
+      <div class="flex items-center gap-2 text-sm mb-5" style="color:hsl(var(--muted-foreground))">
+        <span onclick="show('home')" class="hover:text-foreground cursor-pointer transition-colors">Inicio</span>
+        <span>›</span><span>Capacitación</span>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">Capacitación</h1>
+          <p class="text-sm mt-1" style="color:hsl(var(--muted-foreground))">23 videos publicados</p>
+        </div>
+        <button onclick="show('publish')" class="btn btn-default btn-sm self-start">+ Publicar video</button>      </div>
+
+      <!-- Filtros -->
+      <div class="card p-4 mb-6">
+        <div class="flex flex-wrap gap-3">
+          <div class="relative flex-1 min-w-48">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2" style="color:hsl(var(--muted-foreground))" data-icon="search"></span>
+            <input type="text" placeholder="Buscar por título..." class="input" style="padding-left:2.25rem" />
+          </div>
+          <select class="input w-auto min-w-40"><option>Todos los estados</option><option>Nuevo</option><option>En progreso</option><option>Completado</option></select>
+          <select class="input w-auto min-w-44"><option>Cualquier duración</option><option>Menos de 10 min</option><option>10 – 30 min</option><option>Más de 30 min</option></select>
+          <select class="input w-auto min-w-44"><option>Más recientes</option><option>Más vistos</option><option>Por duración</option></select>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div class="card overflow-hidden cursor-pointer hover:border-foreground/30 transition-all group" onclick="show('player')">
+          <div class="aspect-video relative flex items-center justify-center" style="background:hsl(var(--muted))">
+            <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>
+            <span class="absolute top-2 left-2"><span class="badge badge-success">✓ VISTO</span></span>
+            <span class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md" style="background:hsl(var(--background)/0.8)">22 min</span>
+          </div>
+          <div class="p-4"><p class="font-medium text-sm truncate">Seguridad de la información</p><p class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">Capacitación</p></div>
+        </div>
+
+        <div class="card overflow-hidden cursor-pointer hover:border-foreground/30 transition-all group" onclick="show('player')">
+          <div class="aspect-video relative flex items-center justify-center" style="background:hsl(var(--muted))">
+            <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>
+            <span class="absolute top-2 left-2"><span class="badge badge-warning">NUEVO</span></span>
+            <span class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md" style="background:hsl(var(--background)/0.8)">18 min</span>
+            <div class="absolute bottom-0 left-0 right-0"><div class="progress-track" style="border-radius:0"><div class="progress-fill" style="width:34%"></div></div></div>
+          </div>
+          <div class="p-4"><p class="font-medium text-sm truncate">Inducción a la empresa 2026</p><p class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">Capacitación · 34% visto</p></div>
+        </div>
+
+        <div class="card overflow-hidden cursor-pointer hover:border-foreground/30 transition-all group" onclick="show('player')">
+          <div class="aspect-video relative flex items-center justify-center" style="background:hsl(var(--muted))">
+            <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>
+            <span class="absolute top-2 left-2"><span class="badge badge-warning">NUEVO</span></span>
+            <span class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md" style="background:hsl(var(--background)/0.8)">7 min</span>
+          </div>
+          <div class="p-4"><p class="font-medium text-sm truncate">Prevención de riesgos laborales</p><p class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">Capacitación</p></div>
+        </div>
+
+        <div class="card overflow-hidden cursor-pointer hover:border-foreground/30 transition-all group" onclick="show('player')">
+          <div class="aspect-video relative flex items-center justify-center" style="background:hsl(var(--muted))">
+            <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>
+            <span class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md" style="background:hsl(var(--background)/0.8)">31 min</span>
+          </div>
+          <div class="p-4"><p class="font-medium text-sm truncate">Herramientas de colaboración</p><p class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">Capacitación</p></div>
+        </div>
+
+        <!-- Sin archivo -->
+        <div class="card overflow-hidden" style="opacity:0.55">
+          <div class="aspect-video flex items-center justify-center" style="background:hsl(var(--muted)/0.5)">
+            <div class="text-center"><div class="text-3xl mb-1 opacity-30">📹</div><p class="text-xs" style="color:hsl(var(--muted-foreground))">Sin archivo</p></div>
+          </div>
+          <div class="p-4"><p class="font-medium text-sm truncate" style="color:hsl(var(--muted-foreground))">Curso de liderazgo avanzado</p><p class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">Archivo no disponible aún</p></div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div class="card flex flex-col items-center justify-center p-8 text-center min-h-44" style="border-style:dashed">
+          <span data-icon="inbox" class="opacity-20 mb-2" style="display:flex;justify-content:center"></span>
+          <p class="text-sm" style="color:hsl(var(--muted-foreground))">No hay más videos publicados.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================================================================
+  PANTALLA 4 — PLAYER
+================================================================ -->
+<div id="screen-player" class="screen min-h-screen w-full">
+  <div id="sb-player"></div>
+  <div class="flex-1 flex flex-col min-w-0">
+    <div id="tb-player"></div>
+    <main class="flex-1 p-6 overflow-y-auto max-w-5xl mx-auto w-full">
+      <div class="flex items-center gap-2 text-sm mb-4" style="color:hsl(var(--muted-foreground))">
+        <span onclick="show('home')" class="hover:text-foreground cursor-pointer">Inicio</span><span>›</span>
+        <span onclick="show('catalog')" class="hover:text-foreground cursor-pointer">Capacitación</span><span>›</span>
+        <span class="truncate">Inducción a la empresa 2026</span>
+      </div>
+
+      <!-- Player -->
+      <div class="aspect-video rounded-lg border border-border relative flex items-center justify-center overflow-hidden mb-6 group cursor-pointer" style="background:hsl(var(--sidebar))">
+        <div class="text-center relative z-10">
+          <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 transition-opacity group-hover:opacity-80 shadow-2xl" style="background:hsl(var(--foreground))">
+            <span data-icon="play" style="color:hsl(var(--background));display:flex"></span>
+          </div>
+          <p class="text-sm" style="color:hsl(var(--muted-foreground))">Continuar desde 6:08</p>
+          <p class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground)/0.6)">Progreso guardado automáticamente cada 15 s</p>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 p-4" style="background:linear-gradient(to top, hsl(var(--sidebar)), transparent)">
+          <div class="progress-track mb-2 cursor-pointer"><div class="progress-fill" style="width:34%"></div></div>
+          <div class="flex items-center justify-between text-xs" style="color:hsl(var(--muted-foreground))">
+            <div class="flex items-center gap-4">
+              <span class="cursor-pointer hover:text-foreground text-base transition-colors">▶</span>
+              <span>6:08 <span style="opacity:.5">/ 18:00</span></span>
+              <span class="cursor-pointer hover:text-foreground transition-colors">🔊</span>
+            </div>
+            <div class="flex gap-3"><span class="cursor-pointer hover:text-foreground">⚙</span><span class="cursor-pointer hover:text-foreground">⛶</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h1 class="text-xl font-bold">Inducción a la empresa 2026</h1>
+              <div class="flex flex-wrap items-center gap-2 mt-2">
+                <span class="badge badge-secondary">Capacitación</span>
+                <span class="text-xs" style="color:hsl(var(--muted-foreground))">18 min</span>
+                <span style="color:hsl(var(--muted-foreground))">·</span>
+                <span class="text-xs" style="color:hsl(var(--muted-foreground))">15 sep. 2026</span>
+                <span class="badge badge-warning">NUEVO</span>
+              </div>
+            </div>
+            <button onclick="show('publish')" class="btn btn-outline btn-sm shrink-0"><span data-icon="edit"></span> Editar</button>
+          </div>
+          <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">Video introductorio para nuevos colaboradores. Cubre la historia de la empresa, valores corporativos, estructura organizacional y procesos iniciales de onboarding. Material obligatorio durante las primeras dos semanas.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="badge badge-secondary">👁 342 reproducciones</span>
+            <span class="badge badge-secondary">✅ 71% tasa de compleción</span>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-sm font-semibold">Tu progreso</p>
+              <span class="text-sm font-bold">34%</span>
+            </div>
+            <div class="progress-track mb-2"><div class="progress-fill" style="width:34%"></div></div>
+            <div class="flex justify-between text-xs mb-5" style="color:hsl(var(--muted-foreground))">
+              <span>6:08 visto</span><span>11:52 restantes</span>
+            </div>
+            <button class="btn btn-default w-full btn-sm">✓ Marcar como completado</button>
+            <p class="text-xs text-center mt-2" style="color:hsl(var(--muted-foreground))">Se guarda automáticamente</p>
+          </div>
+          <div class="card p-4 space-y-2 text-xs" style="color:hsl(var(--muted-foreground))">
+            <p class="font-semibold text-sm mb-1" style="color:inherit">Detalles</p>
+            <p>📚 Capacitación</p><p>⏱ 18 minutos</p><p>📅 15 sep. 2026</p><p>👁 342 reproducciones</p><p>✅ 71% compleción promedio</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================================================================
+  PANTALLA 5 — PUBLICAR
+================================================================ -->
+<div id="screen-publish" class="screen min-h-screen w-full">
+  <div id="sb-publish"></div>
+  <div class="flex-1 flex flex-col min-w-0">
+    <div id="tb-publish"></div>
+    <main class="flex-1 p-6 overflow-y-auto">
+      <div class="max-w-2xl mx-auto">
+        <div class="flex items-center gap-2 text-sm mb-5" style="color:hsl(var(--muted-foreground))">
+          <span onclick="show('catalog')" class="hover:text-foreground cursor-pointer">Capacitación</span><span>›</span><span>Publicar video</span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight mb-6">Publicar video</h1>
+        <div class="space-y-5">
+          <div class="card">
+            <div class="card-header"><p class="card-title">Información del video</p><p class="card-description">Título, descripción y biblioteca de destino.</p></div>
+            <div class="card-content space-y-4">
+              <div class="space-y-2"><label class="text-sm font-medium">Título <span class="text-red-400">*</span></label><input type="text" placeholder="Ej: Capacitación en herramientas 2026" class="input" /></div>
+              <div class="space-y-2"><label class="text-sm font-medium">Descripción</label><textarea rows="3" placeholder="Breve descripción del contenido..." class="input"></textarea></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Biblioteca <span class="text-red-400">*</span></label>
+                  <select class="input"><option>Capacitación</option><option>Eventos</option><option>Pruebas</option></select>
+                  <p class="text-xs" style="color:hsl(var(--muted-foreground))">RR. HH. solo puede en Comunicaciones</p>
+                </div>
+                <div class="space-y-2"><label class="text-sm font-medium">Estado inicial</label><select class="input"><option>Borrador</option><option>Publicado</option></select></div>
+              </div>
+              <div class="space-y-2"><label class="text-sm font-medium">Duración (segundos)</label><input type="number" placeholder="Ej: 1080 = 18 min" class="input" /></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><p class="card-title">Archivo de video</p></div>
+            <div class="card-content">
+              <div class="border-2 border-dashed rounded-lg p-10 text-center cursor-pointer group transition-colors hover:border-foreground/40" style="border-color:hsl(var(--border))">
+                <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📹</div>
+                <p class="text-sm" style="color:hsl(var(--muted-foreground))">Arrastra el archivo aquí o <span style="color:hsl(var(--foreground))" class="underline">elige desde tu equipo</span></p>
+                <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">MP4 · máx. 2 GB</p>
+              </div>
+              <div class="mt-4 aspect-video rounded-lg flex items-center justify-center border border-border" style="background:hsl(var(--muted))">
+                <div class="text-center"><span data-icon="film" class="opacity-20 mb-1" style="display:flex;justify-content:center"></span><p class="text-xs" style="color:hsl(var(--muted-foreground))">Preview disponible al subir el archivo</p></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><p class="card-title">Historial de estados</p></div>
+            <div class="card-content">
+              <div class="flex items-center gap-3 text-sm">
+                <div class="w-2 h-2 rounded-full shrink-0" style="background:hsl(var(--muted-foreground))"></div>
+                <span style="color:hsl(var(--muted-foreground))">Borrador creado por María González</span>
+                <span class="ml-auto text-xs shrink-0" style="color:hsl(var(--muted-foreground))">20 sep · 14:32</span>
+              </div>
+              <p class="text-xs mt-3" style="color:hsl(var(--muted-foreground))">Los cambios de estado quedan registrados aquí.</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button onclick="show('catalog')" class="btn btn-outline flex-1">Cancelar</button>
+            <button class="btn btn-secondary">Borrador</button>
+            <button class="btn btn-default flex-1">Publicar</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================================================================
+  PANTALLA 6 — ANALÍTICA
+================================================================ -->
+<div id="screen-analytics" class="screen min-h-screen w-full">
+  <div id="sb-analytics"></div>
+  <div class="flex-1 flex flex-col min-w-0">
+    <div id="tb-analytics"></div>
+    <main class="flex-1 p-6 overflow-y-auto space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div><h1 class="text-2xl font-bold tracking-tight">Analítica</h1><p class="text-sm mt-1" style="color:hsl(var(--muted-foreground))">Biblioteca: Capacitación</p></div>
+        <div class="flex flex-wrap gap-3">
+          <select class="input w-auto min-w-44"><option>Últimos 7 días</option><option>Últimos 30 días</option><option>Este mes</option></select>
+          <select class="input w-auto min-w-52"><option>Capacitación (mi biblioteca)</option><option disabled>Comunicaciones (sin acceso)</option><option disabled>Todas — solo Admin</option></select>
+        </div>
+      </div>
+
+      <div class="tabs-list max-w-xs">
+        <button class="tab-trigger active" onclick="setTab(this)">Resumen</button>
+        <button class="tab-trigger" onclick="setTab(this)">Por video</button>
+        <button class="tab-trigger" onclick="setTab(this)">Usuarios</button>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div class="card p-4"><p class="text-xs uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Reproducciones</p><p class="text-2xl font-black mt-2">1.284</p><p class="text-xs mt-1 text-green-500">↑ 12%</p></div>
+        <div class="card p-4"><p class="text-xs uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Usuarios</p><p class="text-2xl font-black mt-2">342</p><p class="text-xs mt-1 text-green-500">↑ 8%</p></div>
+        <div class="card p-4"><p class="text-xs uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Tiempo visto</p><p class="text-2xl font-black mt-2">847<span class="text-sm font-normal" style="color:hsl(var(--muted-foreground))"> h</span></p><p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">~2.5 h/usuario</p></div>
+        <div class="card p-4"><p class="text-xs uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Compleción</p><p class="text-2xl font-black mt-2">71<span class="text-sm font-normal" style="color:hsl(var(--muted-foreground))">%</span></p><p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">Promedio</p></div>
+        <div class="card p-4"><p class="text-xs uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Publicados</p><p class="text-2xl font-black mt-2">23</p><p class="text-xs mt-1 text-yellow-500">4 nuevos</p></div>
+        <div class="card p-4" style="border-color:hsl(0 62.8% 30.6% / 0.4)"><p class="text-xs uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">Errores</p><p class="text-2xl font-black mt-2 text-red-400">7</p><p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">Player</p></div>
+      </div>
+
+      <div class="card overflow-hidden">
+        <div class="card-header border-b border-border" style="padding-bottom:1rem">
+          <p class="card-title">Top 10 videos más vistos</p>
+          <p class="card-description">Capacitación · últimos 7 días</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="table-wrap">
+            <thead><tr><th>#</th><th>Video</th><th class="text-right">Reproducciones</th><th class="text-right">Usuarios</th><th class="text-right">Tiempo</th><th class="text-right">Compleción</th></tr></thead>
+            <tbody>
+              <tr class="cursor-pointer" onclick="show('player')"><td class="font-mono text-xs" style="color:hsl(var(--muted-foreground))">1</td><td><p class="font-medium">Inducción a la empresa 2026</p><p class="text-xs" style="color:hsl(var(--muted-foreground))">18 min · 15 sep.</p></td><td class="text-right font-semibold">342</td><td class="text-right" style="color:hsl(var(--muted-foreground))">289</td><td class="text-right" style="color:hsl(var(--muted-foreground))">102 h</td><td class="text-right"><div class="flex items-center justify-end gap-2"><div class="w-14 progress-track"><div class="progress-fill" style="width:78%"></div></div><span class="text-xs font-bold text-green-500">78%</span></div></td></tr>
+              <tr class="cursor-pointer" onclick="show('player')"><td class="font-mono text-xs" style="color:hsl(var(--muted-foreground))">2</td><td><p class="font-medium">Seguridad de la información</p><p class="text-xs" style="color:hsl(var(--muted-foreground))">22 min · 10 sep.</p></td><td class="text-right font-semibold">218</td><td class="text-right" style="color:hsl(var(--muted-foreground))">201</td><td class="text-right" style="color:hsl(var(--muted-foreground))">79 h</td><td class="text-right"><div class="flex items-center justify-end gap-2"><div class="w-14 progress-track"><div class="progress-fill" style="width:71%"></div></div><span class="text-xs font-bold text-green-500">71%</span></div></td></tr>
+              <tr class="cursor-pointer" onclick="show('player')"><td class="font-mono text-xs" style="color:hsl(var(--muted-foreground))">3</td><td><p class="font-medium">Prevención de riesgos laborales</p><p class="text-xs" style="color:hsl(var(--muted-foreground))">7 min · 19 sep.</p></td><td class="text-right font-semibold">187</td><td class="text-right" style="color:hsl(var(--muted-foreground))">156</td><td class="text-right" style="color:hsl(var(--muted-foreground))">21 h</td><td class="text-right"><div class="flex items-center justify-end gap-2"><div class="w-14 progress-track"><div class="progress-fill" style="width:88%"></div></div><span class="text-xs font-bold text-green-500">88%</span></div></td></tr>
+              <tr class="cursor-pointer" onclick="show('player')"><td class="font-mono text-xs" style="color:hsl(var(--muted-foreground))">4</td><td><p class="font-medium">Herramientas de colaboración</p><p class="text-xs" style="color:hsl(var(--muted-foreground))">31 min · 5 sep.</p></td><td class="text-right font-semibold">143</td><td class="text-right" style="color:hsl(var(--muted-foreground))">120</td><td class="text-right" style="color:hsl(var(--muted-foreground))">73 h</td><td class="text-right"><div class="flex items-center justify-end gap-2"><div class="w-14 progress-track"><div class="progress-fill" style="width:52%"></div></div><span class="text-xs font-bold text-yellow-500">52%</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================================================================
+  PANTALLA 7 — ADMIN USUARIOS
+================================================================ -->
+<div id="screen-admin" class="screen min-h-screen w-full">
+  <div id="sb-admin"></div>
+  <div class="flex-1 flex flex-col min-w-0">
+    <div id="tb-admin"></div>
+    <main class="flex-1 p-6 overflow-y-auto space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div><h1 class="text-2xl font-bold tracking-tight">Gestión de usuarios</h1><p class="text-sm mt-1" style="color:hsl(var(--muted-foreground))">8 usuarios semilla · solo lectura</p></div>
+        <div class="flex gap-3">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2" style="color:hsl(var(--muted-foreground))" data-icon="search"></span>
+            <input type="text" placeholder="Buscar usuario..." class="input" style="padding-left:2.25rem;width:13rem" />
+          </div>
+          <select class="input w-auto min-w-44"><option>Todos los grupos</option><option>Administrador</option><option>Capacitación</option><option>RR. HH.</option><option>Empleado</option></select>
+        </div>
+      </div>
+
+      <div class="card overflow-hidden">
+        <table class="table-wrap">
+          <thead><tr><th>Nombre</th><th>Correo</th><th>Grupo</th><th class="text-right">Último acceso</th></tr></thead>
+          <tbody>
+            <tr><td><div class="flex items-center gap-3"><div class="avatar bg-red-700"><img src="assets/images/avatars/user-2.png" alt="CM" /></div>Carlos Mendoza</div></td><td style="color:hsl(var(--muted-foreground))">c.mendoza@empresa.com</td><td><span class="badge badge-secondary">Admin</span></td><td class="text-right text-xs" style="color:hsl(var(--muted-foreground))">Hoy 09:14</td></tr>
+            <tr><td><div class="flex items-center gap-3"><div class="avatar bg-blue-700"><img src="assets/images/avatars/user-1.png" alt="MG" /></div>María González</div></td><td style="color:hsl(var(--muted-foreground))">m.gonzalez@empresa.com</td><td><span class="badge badge-secondary">Capacitación</span></td><td class="text-right text-xs" style="color:hsl(var(--muted-foreground))">Hoy 08:47</td></tr>
+            <tr><td><div class="flex items-center gap-3"><div class="avatar bg-blue-700"><img src="assets/images/avatars/user-3.png" alt="AT" /></div>Andrea Torres</div></td><td style="color:hsl(var(--muted-foreground))">a.torres@empresa.com</td><td><span class="badge badge-secondary">Capacitación</span></td><td class="text-right text-xs" style="color:hsl(var(--muted-foreground))">Ayer 16:30</td></tr>
+            <tr><td><div class="flex items-center gap-3"><div class="avatar bg-emerald-700"><img src="assets/images/avatars/user-4.png" alt="RS" /></div>Roberto Silva</div></td><td style="color:hsl(var(--muted-foreground))">r.silva@empresa.com</td><td><span class="badge badge-secondary">RR. HH.</span></td><td class="text-right text-xs" style="color:hsl(var(--muted-foreground))">Ayer 11:05</td></tr>
+            <tr><td><div class="flex items-center gap-3"><div class="avatar bg-emerald-700"><img src="assets/images/avatars/user-5.png" alt="LP" /></div>Lucía Paredes</div></td><td style="color:hsl(var(--muted-foreground))">l.paredes@empresa.com</td><td><span class="badge badge-secondary">RR. HH.</span></td><td class="text-right text-xs" style="color:hsl(var(--muted-foreground))">20 sep. 14:22</td></tr>
+            <tr><td><div class="flex items-center gap-3"><div class="avatar bg-zinc-600"><img src="assets/images/avatars/user-6.png" alt="JC" /></div>Juan Castillo</div></td><td style="color:hsl(var(--muted-foreground))">j.castillo@empresa.com</td><td><span class="badge badge-secondary">Empleado</span></td><td class="text-right text-xs" style="color:hsl(var(--muted-foreground))">Hoy 07:58</td></tr>
+            <tr><td><div class="flex items-center gap-3"><div class="avatar bg-zinc-600"><img src="assets/images/avatars/user-7.png" alt="PV" /></div>Patricia Vera</div></td><td style="color:hsl(var(--muted-foreground))">p.vera@empresa.com</td><td><span class="badge badge-secondary">Empleado</span></td><td class="text-right text-xs" style="color:hsl(var(--muted-foreground))">19 sep. 10:15</td></tr>
+            <tr><td><div class="flex items-center gap-3"><div class="avatar bg-zinc-700"><img src="assets/images/avatars/user-8.png" alt="DR" /></div>Diego Ramírez</div></td><td style="color:hsl(var(--muted-foreground))">d.ramirez@empresa.com</td><td><span class="badge badge-secondary">Empleado</span></td><td class="text-right text-xs italic" style="color:hsl(var(--muted-foreground));opacity:.5">Sin acceso aún</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs" style="color:hsl(var(--muted-foreground))">Solo lectura. La gestión de cuentas se integrará con Active Directory en fases posteriores.</p>
+    </main>
+  </div>
+</div>
+
+<!-- ================================================================
+  PANTALLA 8 — 403
+================================================================ -->
+<div id="screen-error403" class="screen min-h-screen w-full">
+  <div id="sb-error403"></div>
+  <div class="flex-1 flex flex-col min-w-0">
+    <div id="tb-error403"></div>
+    <main class="flex-1 flex items-center justify-center p-6">
+      <div class="text-center max-w-sm w-full space-y-6">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto text-foreground" style="background:hsl(var(--muted))"><span data-icon="ban" style="display:flex;color:hsl(var(--muted-foreground))"></span></div>
+        <div class="space-y-2">
+          <p class="text-xs font-mono uppercase tracking-widest" style="color:hsl(var(--muted-foreground))">Error 403</p>
+          <h1 class="text-2xl font-bold">Sin permiso</h1>
+          <p class="text-sm" style="color:hsl(var(--muted-foreground))">Tu grupo <strong>Empleado</strong> no tiene acceso a esta sección.</p>
+          <p class="text-xs" style="color:hsl(var(--muted-foreground))">Contacta a tu administrador si crees que deberías tener acceso.</p>
+        </div>
+        <div class="flex flex-col gap-3">
+          <button onclick="show('home')" class="btn btn-default w-full">Volver al inicio</button>
+          <button onclick="show('login')" class="btn btn-outline w-full">Cerrar sesión</button>
+        </div>
+        <div class="card p-4 text-left">
+          <p class="text-xs font-semibold mb-3">Con tu rol de Empleado puedes:</p>
+          <ul class="space-y-2 text-xs" style="color:hsl(var(--muted-foreground))">
+            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Ver Capacitación, Comunicaciones, Eventos</li>
+            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Reproducir y guardar tu progreso</li>
+            <li class="flex items-center gap-2"><span style="color:hsl(0 62.8% 50%)">✗</span> Biblioteca Pruebas (solo staff)</li>
+            <li class="flex items-center gap-2"><span style="color:hsl(0 62.8% 50%)">✗</span> Publicar o editar videos</li>
+            <li class="flex items-center gap-2"><span style="color:hsl(0 62.8% 50%)">✗</span> Ver analítica</li>
+            <li class="flex items-center gap-2"><span style="color:hsl(0 62.8% 50%)">✗</span> Administrar usuarios</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- App JS -->
+<script src="js/app.js"></script>
+</body>
+</html>
