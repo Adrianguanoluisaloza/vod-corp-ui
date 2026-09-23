@@ -32,7 +32,52 @@ const ICONS = {
   lock:       `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
   ban:        `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
   inbox:      `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>`,
+  menu:       `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`,
+  x:          `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  moreHorizontal:`<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>`,
 };
+
+/* ── Control del Drawer / Sheet móvil (estilo shadcn) ─────────── */
+function openMobileDrawer() {
+  const drawer = document.getElementById('mobile-drawer');
+  const backdrop = document.getElementById('mobile-drawer-backdrop');
+  if (drawer && backdrop) {
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeMobileDrawer() {
+  const drawer = document.getElementById('mobile-drawer');
+  const backdrop = document.getElementById('mobile-drawer-backdrop');
+  if (drawer && backdrop) {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+function toggleMobileDrawer() {
+  const drawer = document.getElementById('mobile-drawer');
+  if (drawer && drawer.classList.contains('open')) {
+    closeMobileDrawer();
+  } else {
+    openMobileDrawer();
+  }
+}
+
+/* ── Switcher flotante colapsable ─────────────────────────────── */
+function toggleDebugPanel() {
+  const panel = document.getElementById('debug-nav-panel');
+  const chevron = document.getElementById('debug-chevron');
+  if (panel) {
+    const isHidden = panel.classList.toggle('hidden');
+    if (chevron) {
+      chevron.textContent = isHidden ? '▴' : '▾';
+    }
+  }
+}
 
 /* ── Inyectar iconos Lucide en elementos con data-icon ─────────── */
 function injectIcons(root = document) {
@@ -83,15 +128,38 @@ function animateScreen(screen) {
 
 /* ── Mostrar pantalla ──────────────────────────────────────────── */
 function show(id) {
+  // Cerrar Drawer móvil si estaba abierto
+  closeMobileDrawer();
+
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('[id^="nav-"]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+
+  // Actualizar estado activo en todos los nav-item (sidebar desktop, drawer móvil, switcher)
+  document.querySelectorAll('.nav-item').forEach(b => {
+    const oc = b.getAttribute('onclick') || '';
+    if (oc.includes(`show('${id}')`)) {
+      b.classList.add('active');
+    } else if (oc.includes('show(')) {
+      b.classList.remove('active');
+    }
+  });
 
   const screen = document.getElementById('screen-' + id);
   if (!screen) return;
   screen.classList.add('active');
 
-  const navBtn = document.getElementById('nav-' + id);
-  if (navBtn) navBtn.classList.add('active');
+  const bnavBtn = document.getElementById('bnav-' + id);
+  if (bnavBtn) bnavBtn.classList.add('active');
+
+  // Controlar barra inferior en pantallas especiales (ej. login)
+  const bottomNav = document.getElementById('mobile-bottom-nav');
+  if (bottomNav) {
+    if (id === 'login') {
+      bottomNav.style.display = 'none';
+    } else {
+      bottomNav.style.display = '';
+    }
+  }
 
   if (SIDEBAR_SCREENS.includes(id)) {
     const sbEl = document.getElementById('sb-' + id);
@@ -141,15 +209,20 @@ function setTab(el) {
     document.documentElement.classList.add('dark');
   }
 
-  // Inyectar iconos en la pantalla de login (activa al inicio)
-  injectIcons(document.getElementById('screen-login'));
+  // Inyectar iconos en toda la estructura inicial
+  injectIcons(document);
 
   // Nav inicial
   const loginBtn = document.getElementById('nav-login');
   if (loginBtn) loginBtn.classList.add('active');
+
+  // La barra inferior inicia oculta si estamos en login
+  const bottomNav = document.getElementById('mobile-bottom-nav');
+  if (bottomNav) bottomNav.style.display = 'none';
 
   // Animar login al cargar
   requestAnimationFrame(() => {
     animateScreen(document.getElementById('screen-login'));
   });
 })();
+

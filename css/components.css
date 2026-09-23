@@ -13,6 +13,7 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   transition: background 0.2s, color 0.2s;
+  overflow-x: hidden;
 }
 
 /* ── Scrollbar ── */
@@ -297,3 +298,126 @@ textarea.input { resize: none; }
 .tab-trigger {
   transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
+
+/* ================================================================
+   ADAPTACIÓN MÓVIL (shadcn/ui Sheet & Mobile Streaming UX)
+   ================================================================ */
+
+/* ── Responsive Drawer / Sheet Móvil ── */
+#mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#mobile-drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#mobile-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 280px;
+  max-width: 85vw;
+  background: hsl(var(--sidebar));
+  border-right: 1px solid hsl(var(--border));
+  z-index: 51;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+#mobile-drawer.open {
+  transform: translateX(0);
+}
+
+/* ── Mobile Bottom Navigation Bar (YouTube/Netflix style) ── */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background: hsl(var(--background) / 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid hsl(var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 0.5rem;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 40;
+}
+@media (min-width: 1024px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  gap: 0.25rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.1s ease;
+  padding: 0.25rem;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-item:active {
+  transform: scale(0.92);
+}
+.bottom-nav-item.active {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+.bottom-nav-item.active svg {
+  color: hsl(var(--foreground));
+}
+
+/* ── Ocultar sidebar de escritorio en móviles ── */
+@media (max-width: 1023px) {
+  .sidebar-desktop {
+    display: none !important;
+  }
+}
+
+/* ── Floating debug switcher colapsable ── */
+.debug-switcher-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.debug-switcher-pill:hover {
+  border-color: hsl(var(--foreground) / 0.4);
+}
+
