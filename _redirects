@@ -1,0 +1,2 @@
+/api/* http://40.70.241.221/api/:splat 200
+/hls/* http://40.70.241.221/hls/:splat 200
