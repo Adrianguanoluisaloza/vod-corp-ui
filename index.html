@@ -53,14 +53,14 @@
 <!-- ================================================================
   MODAL NO DESCARTABLE: CAMBIO OBLIGATORIO DE CLAVE (Fase 5)
 ================================================================ -->
-<div id="modal-change-password" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
+<div id="modal-change-password" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
   <div class="card p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 border border-border bg-card">
     <div class="space-y-1.5 text-center">
       <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto mb-2">
         <span data-icon="lock"></span>
       </div>
-      <h2 class="text-xl font-bold tracking-tight">Cambio obligatorio de contraseña</h2>
-      <p class="text-xs text-muted-foreground">Por políticas de seguridad empresarial, debes actualizar tu clave temporal antes de acceder al contenido.</p>
+      <h2 id="cp-modal-title" class="text-xl font-bold tracking-tight">Cambio obligatorio de contraseña</h2>
+      <p id="cp-modal-desc" class="text-xs text-muted-foreground">Por políticas de seguridad empresarial, debes actualizar tu clave temporal antes de acceder al contenido.</p>
     </div>
     <form id="form-change-password" class="space-y-4">
       <div class="space-y-1.5">
@@ -76,7 +76,10 @@
         <input type="password" id="cp-confirmar" required minlength="10" class="input w-full" placeholder="••••••••••••" />
       </div>
       <div id="cp-error" class="text-xs text-red-400 font-medium hidden"></div>
-      <button type="submit" id="cp-submit" class="btn btn-default w-full">Actualizar contraseña y continuar</button>
+      <div class="flex items-center gap-3 pt-2">
+        <button type="button" id="cp-cancel" onclick="closeChangePasswordModal()" class="btn btn-outline flex-1 hidden">Cancelar</button>
+        <button type="submit" id="cp-submit" class="btn btn-default flex-1">Actualizar contraseña</button>
+      </div>
     </form>
   </div>
 </div>
@@ -146,6 +149,9 @@
         <p class="text-sm font-medium truncate user-display-name">Usuario</p>
         <p class="text-xs truncate user-display-dept" style="color:hsl(var(--muted-foreground))">Departamento</p>
       </div>
+      <button onclick="closeMobileDrawer(); openChangePasswordModal(true);" class="btn btn-ghost btn-icon shrink-0" style="color:hsl(var(--muted-foreground))" title="Cambiar contraseña">
+        <span data-icon="key"></span>
+      </button>
       <button onclick="logout()" class="btn btn-ghost btn-icon shrink-0" style="color:hsl(var(--muted-foreground))" title="Cerrar sesión">
         <span data-icon="logOut"></span>
       </button>
@@ -227,6 +233,9 @@
           <p class="text-sm font-medium truncate user-display-name">Usuario</p>
           <p class="text-xs truncate user-display-dept" style="color:hsl(var(--muted-foreground))">Departamento</p>
         </div>
+        <button onclick="openChangePasswordModal(true)" class="btn btn-ghost btn-icon shrink-0" style="color:hsl(var(--muted-foreground))" title="Cambiar contraseña">
+          <span data-icon="key"></span>
+        </button>
         <button onclick="logout()" class="btn btn-ghost btn-icon shrink-0" style="color:hsl(var(--muted-foreground))" title="Cerrar sesión">
           <span data-icon="logOut"></span>
         </button>
@@ -252,6 +261,9 @@
       <button onclick="toggleTheme()" class="btn btn-ghost btn-icon" title="Cambiar tema">
         <span class="icon-sun" data-icon="sun"></span>
         <span class="icon-moon" data-icon="moon"></span>
+      </button>
+      <button onclick="openChangePasswordModal(true)" class="btn btn-ghost btn-icon" title="Cambiar contraseña">
+        <span data-icon="key"></span>
       </button>
       <div class="avatar avatar-sm bg-blue-600">
         <span class="text-xs font-bold text-white">US</span>
@@ -521,7 +533,10 @@
           <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Analítica de Visualización</h1>
           <p class="text-sm mt-0.5 sm:mt-1" style="color:hsl(var(--muted-foreground))">Métricas globales y actividad de visualización en la plataforma</p>
         </div>
-        <button onclick="loadAnalyticsScreen()" class="btn btn-outline btn-sm">Actualizar datos</button>
+        <button onclick="loadAnalyticsScreen(true)" class="btn btn-outline btn-sm flex items-center gap-1.5">
+          <span data-icon="refresh"></span>
+          <span>Actualizar datos</span>
+        </button>
       </div>
 
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

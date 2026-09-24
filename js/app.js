@@ -31,6 +31,8 @@ const ICONS = {
   graduationCap:`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>`,
   megaphone:  `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>`,
   calendar:   `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>`,
+  key:        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>`,
+  refresh:    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>`,
 };
 
 /* ── Utilidad para escapar texto (Mitigación estricta de XSS) ── */
@@ -187,6 +189,11 @@ function show(id) {
     id = 'home';
   }
 
+  // Si el usuario autenticado tiene pendiente el cambio obligatorio de contraseña, forzar modal
+  if (isAuth && user && user.debe_cambiar_clave) {
+    openChangePasswordModal(false);
+  }
+
   // Protección de rutas administrativas
   if ((id === 'admin' || id === 'analytics') && !window.api.isAdmin()) {
     id = 'error403';
@@ -195,6 +202,12 @@ function show(id) {
   // Desactivar reproductor si cambiamos de pantalla
   if (id !== 'player') {
     stopPlayer();
+  }
+
+  // Detener auto-refresco de analítica si salimos de esa pantalla
+  if (id !== 'analytics' && window.analyticsPollTimer) {
+    clearInterval(window.analyticsPollTimer);
+    window.analyticsPollTimer = null;
   }
 
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -244,7 +257,20 @@ function show(id) {
   if (id === 'home') loadHomeScreen();
   if (id === 'catalog') loadCatalogScreen();
   if (id === 'admin') loadAdminScreen();
-  if (id === 'analytics') loadAnalyticsScreen();
+  if (id === 'analytics') {
+    loadAnalyticsScreen();
+    if (!window.analyticsPollTimer) {
+      window.analyticsPollTimer = setInterval(() => {
+        const active = document.querySelector('.screen.active');
+        if (active && active.id === 'screen-analytics') {
+          loadAnalyticsScreen(false);
+        } else {
+          clearInterval(window.analyticsPollTimer);
+          window.analyticsPollTimer = null;
+        }
+      }, 10000); // Refresco silencioso cada 10s
+    }
+  }
 }
 
 /* ── Toggle de tema ────────────────────────────────────────────── */
@@ -281,24 +307,47 @@ window.onPasswordChangeRequired = function() {
 };
 
 /* ================================================================
-   MODAL: CAMBIO OBLIGATORIO DE CONTRASEÑA
+   MODAL: CAMBIO DE CONTRASEÑA (OBLIGATORIO Y VOLUNTARIO)
    ================================================================ */
-function openChangePasswordModal() {
+function openChangePasswordModal(isVoluntary = false) {
   const modal = document.getElementById('modal-change-password');
-  if (modal) {
-    modal.classList.remove('hidden');
-    const err = document.getElementById('cp-error');
-    if (err) err.classList.add('hidden');
-    const actual = document.getElementById('cp-actual');
-    if (actual) actual.value = '';
-    const nueva = document.getElementById('cp-nueva');
-    if (nueva) nueva.value = '';
-    const confirmar = document.getElementById('cp-confirmar');
-    if (confirmar) confirmar.value = '';
+  if (!modal) return;
+
+  const user = window.api.getUser();
+  const isMandatory = !isVoluntary && !!(user && user.debe_cambiar_clave);
+
+  const titleEl = document.getElementById('cp-modal-title');
+  const descEl = document.getElementById('cp-modal-desc');
+  const cancelBtn = document.getElementById('cp-cancel');
+
+  if (isMandatory) {
+    if (titleEl) titleEl.textContent = 'Cambio obligatorio de contraseña';
+    if (descEl) descEl.textContent = 'Por políticas de seguridad empresarial, debes actualizar tu clave temporal antes de acceder al contenido.';
+    if (cancelBtn) cancelBtn.classList.add('hidden');
+  } else {
+    if (titleEl) titleEl.textContent = 'Actualizar mi contraseña';
+    if (descEl) descEl.textContent = 'Ingresa tu contraseña actual y define una nueva clave personal (mínimo 10 caracteres).';
+    if (cancelBtn) cancelBtn.classList.remove('hidden');
   }
+
+  const err = document.getElementById('cp-error');
+  if (err) err.classList.add('hidden');
+  const actual = document.getElementById('cp-actual');
+  if (actual) actual.value = '';
+  const nueva = document.getElementById('cp-nueva');
+  if (nueva) nueva.value = '';
+  const confirmar = document.getElementById('cp-confirmar');
+  if (confirmar) confirmar.value = '';
+
+  modal.classList.remove('hidden');
 }
 
 function closeChangePasswordModal() {
+  const user = window.api.getUser();
+  if (user && user.debe_cambiar_clave) {
+    showToast('Debes actualizar tu contraseña obligatoria antes de continuar', 'error');
+    return;
+  }
   const modal = document.getElementById('modal-change-password');
   if (modal) modal.classList.add('hidden');
 }
@@ -327,7 +376,7 @@ function setupLoginForm() {
       submitBtn.textContent = 'Iniciar sesión';
 
       if (res.debe_cambiar_clave || (res.usuario && res.usuario.debe_cambiar_clave)) {
-        openChangePasswordModal();
+        openChangePasswordModal(false);
       } else {
         show('home');
       }
@@ -377,13 +426,19 @@ function setupChangePasswordForm() {
     try {
       await window.api.changePassword(actual, nueva);
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Actualizar contraseña y continuar';
-      closeChangePasswordModal();
+      submitBtn.textContent = 'Actualizar contraseña';
+      const user = window.api.getUser();
+      if (user) {
+        user.debe_cambiar_clave = false;
+        window.api.setUser(user);
+      }
+      const modal = document.getElementById('modal-change-password');
+      if (modal) modal.classList.add('hidden');
       showToast('Contraseña actualizada correctamente. ¡Bienvenido!');
       show('home');
     } catch (err) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Actualizar contraseña y continuar';
+      submitBtn.textContent = 'Actualizar contraseña';
       errorEl.textContent = err.message || 'Error al actualizar contraseña';
       errorEl.classList.remove('hidden');
     }
@@ -941,7 +996,7 @@ function setupCreateUserForm() {
 /* ================================================================
    PANTALLA 6: ANALÍTICA (MÉTRICAS GLOBALES Y TOP 10)
    ================================================================ */
-async function loadAnalyticsScreen() {
+async function loadAnalyticsScreen(isManual = false) {
   if (!window.api.isAdmin()) {
     show('error403');
     return;
@@ -953,7 +1008,8 @@ async function loadAnalyticsScreen() {
   const statPlays = document.getElementById('stat-total-plays');
   const topTable = document.getElementById('analytics-top-videos-tbody');
 
-  if (topTable) {
+  // Solo mostrar estado de carga si la tabla no tiene filas ya cargadas
+  if (topTable && !topTable.querySelector('tr[data-video-id]')) {
     topTable.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-sm text-muted-foreground">Cargando métricas...</td></tr>';
   }
 
@@ -983,6 +1039,7 @@ async function loadAnalyticsScreen() {
         top.forEach((v, idx) => {
           const compPct = parseFloat(v.porcentaje_complecion) || 0;
           const tr = document.createElement('tr');
+          tr.setAttribute('data-video-id', v.id);
           tr.className = 'cursor-pointer hover:bg-accent/50';
           tr.onclick = () => playVideo(v.id);
 
@@ -1008,9 +1065,15 @@ async function loadAnalyticsScreen() {
         });
       }
     }
+    if (isManual) {
+      showToast('Métricas de analítica actualizadas');
+    }
   } catch (err) {
-    if (topTable) {
+    if (topTable && !topTable.querySelector('tr[data-video-id]')) {
       topTable.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-sm text-red-400">Error: ${escapeHTML(err.message)}</td></tr>`;
+    }
+    if (isManual) {
+      showToast('Error al actualizar analítica: ' + err.message, 'error');
     }
   }
 }
