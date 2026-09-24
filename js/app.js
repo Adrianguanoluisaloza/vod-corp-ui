@@ -204,10 +204,13 @@ function show(id) {
     stopPlayer();
   }
 
-  // Detener auto-refresco de analítica si salimos de esa pantalla
+  // Detener auto-refresco de analítica si salimos de esa pantalla;
+  // al salir se hace UN fetch de cierre silencioso y se cancela el timer.
   if (id !== 'analytics' && window.analyticsPollTimer) {
     clearInterval(window.analyticsPollTimer);
     window.analyticsPollTimer = null;
+    // Un último batch al salir para que el admin vea datos frescos si vuelve
+    if (window.api.isAdmin()) loadAnalyticsScreen(false);
   }
 
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -257,18 +260,23 @@ function show(id) {
   if (id === 'home') loadHomeScreen();
   if (id === 'catalog') loadCatalogScreen();
   if (id === 'admin') loadAdminScreen();
+
+  // Analítica: solo polling ACTIVO mientras el admin esté viendo la pantalla.
+  // Fuera de ella: un único fetch de cierre (arriba) y nada más (0 requests en background).
   if (id === 'analytics') {
     loadAnalyticsScreen();
     if (!window.analyticsPollTimer) {
       window.analyticsPollTimer = setInterval(() => {
+        // Verificar en cada tick que sigue siendo admin Y que la pantalla está activa
         const active = document.querySelector('.screen.active');
-        if (active && active.id === 'screen-analytics') {
+        if (window.api.isAdmin() && active && active.id === 'screen-analytics') {
           loadAnalyticsScreen(false);
         } else {
+          // Salió de la pantalla o perdió rol admin → cancelar todo
           clearInterval(window.analyticsPollTimer);
           window.analyticsPollTimer = null;
         }
-      }, 10000); // Refresco silencioso cada 10s
+      }, 10000); // Refresco silencioso cada 10 s SOLO mientras mira la pantalla
     }
   }
 }
@@ -828,13 +836,14 @@ function setupPlayerHeartbeat(videoEl, videoId) {
   videoEl.onplay = () => {
     window.api.sendAnalytics(videoId, 'play', videoEl.currentTime);
     if (!heartbeatInterval) {
-      // Latido cada 15 segundos (Regla Fase 5)
+      // Latido cada 30 segundos: suficiente precisión de reanudación con la mitad de requests
+      // (Adenda optimización: 30 s en vez de 15 s para reducir peticiones a la API)
       heartbeatInterval = setInterval(() => {
         if (!videoEl.paused && !videoEl.ended) {
           window.api.sendAnalytics(videoId, 'progress', videoEl.currentTime);
           updatePlayerProgressBox(videoEl.currentTime, videoEl.duration);
         }
-      }, 15000);
+      }, 30000);
     }
   };
 
