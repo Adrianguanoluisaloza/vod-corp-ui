@@ -241,8 +241,36 @@ input:-webkit-autofill:active {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-/* ── Sidebar layout ── */
+/* ── Sidebar layout & Fixed Desktop Pinning ── */
 .sidebar-width { width: 256px; min-width: 256px; }
+
+.sidebar-desktop {
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+  z-index: 30;
+}
+
+.sidebar-desktop .nav-scroll-area {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sidebar-desktop .user-footer-pinned {
+  flex-shrink: 0;
+  margin-top: auto;
+  border-top: 1px solid hsl(var(--border));
+  background: hsl(var(--sidebar));
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
 
 /* ── Logo adaptation ── */
 .logo-light { display: block; }
@@ -256,9 +284,21 @@ input:-webkit-autofill:active {
 .dark .icon-sun  { display: block; }
 .dark .icon-moon { display: none; }
 
-/* ── Screen routing ── */
+/* ── Screen routing con scroll independiente ── */
 .screen { display: none; }
-.screen.active { display: flex; }
+.screen.active {
+  display: flex !important;
+  width: 100% !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+#screen-login.screen.active {
+  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}
 
 /* ================================================================
    Integración con animations.css

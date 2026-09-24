@@ -179,7 +179,7 @@
   TEMPLATE: SIDEBAR (ESCRITORIO)
 ================================================================ -->
 <template id="tpl-sidebar">
-  <aside class="sidebar-width sidebar-desktop flex flex-col min-h-screen shrink-0 border-r border-border" style="background:hsl(var(--sidebar))">
+  <aside class="sidebar-width sidebar-desktop flex flex-col h-screen max-h-screen sticky top-0 shrink-0 border-r border-border select-none" style="background:hsl(var(--sidebar))">
     <!-- Brand -->
     <div class="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0">
       <img src="assets/images/logos/logoicon.svg" alt="Neoroot" class="logo-light w-7 h-7" />
@@ -188,7 +188,7 @@
     </div>
 
     <!-- Nav -->
-    <div class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+    <div class="nav-scroll-area flex-1 overflow-y-auto px-3 py-4 space-y-5">
       <div>
         <p class="text-xs font-semibold uppercase tracking-widest px-3 mb-2" style="color:hsl(var(--muted-foreground))">Principal</p>
         <div class="space-y-0.5">
@@ -217,8 +217,8 @@
       </div>
     </div>
 
-    <!-- User -->
-    <div class="border-t border-border px-3 py-3 shrink-0">
+    <!-- User Pinned Footer -->
+    <div class="user-footer-pinned border-t border-border px-3 py-3 shrink-0 mt-auto">
       <div class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-accent transition-all">
         <div class="avatar avatar-md bg-blue-600">
           <span class="text-xs font-bold text-white">US</span>
@@ -341,7 +341,7 @@
 ================================================================ -->
 <div id="screen-home" class="screen min-h-screen w-full">
   <div id="sb-home"></div>
-  <div class="flex-1 flex flex-col min-w-0">
+  <div class="flex-1 flex flex-col min-w-0 h-screen max-h-screen overflow-hidden">
     <div id="tb-home"></div>
     <main class="flex-1 p-4 sm:p-6 pb-24 lg:pb-6 space-y-6 overflow-y-auto">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -403,7 +403,7 @@
 ================================================================ -->
 <div id="screen-catalog" class="screen min-h-screen w-full">
   <div id="sb-catalog"></div>
-  <div class="flex-1 flex flex-col min-w-0">
+  <div class="flex-1 flex flex-col min-w-0 h-screen max-h-screen overflow-hidden">
     <div id="tb-catalog"></div>
     <main class="flex-1 p-4 sm:p-6 pb-24 lg:pb-6 overflow-y-auto">
       <div class="flex items-center gap-2 text-sm mb-4 sm:mb-5" style="color:hsl(var(--muted-foreground))">
@@ -455,7 +455,7 @@
 ================================================================ -->
 <div id="screen-player" class="screen min-h-screen w-full">
   <div id="sb-player"></div>
-  <div class="flex-1 flex flex-col min-w-0">
+  <div class="flex-1 flex flex-col min-w-0 h-screen max-h-screen overflow-hidden">
     <div id="tb-player"></div>
     <main class="flex-1 p-4 sm:p-6 pb-24 lg:pb-6 overflow-y-auto max-w-5xl mx-auto w-full">
       <div class="flex items-center gap-2 text-sm mb-4" style="color:hsl(var(--muted-foreground))">
@@ -513,7 +513,7 @@
 ================================================================ -->
 <div id="screen-analytics" class="screen min-h-screen w-full">
   <div id="sb-analytics"></div>
-  <div class="flex-1 flex flex-col min-w-0">
+  <div class="flex-1 flex flex-col min-w-0 h-screen max-h-screen overflow-hidden">
     <div id="tb-analytics"></div>
     <main class="flex-1 p-4 sm:p-6 pb-24 lg:pb-6 overflow-y-auto space-y-5 sm:space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
@@ -575,7 +575,7 @@
 ================================================================ -->
 <div id="screen-admin" class="screen min-h-screen w-full">
   <div id="sb-admin"></div>
-  <div class="flex-1 flex flex-col min-w-0">
+  <div class="flex-1 flex flex-col min-w-0 h-screen max-h-screen overflow-hidden">
     <div id="tb-admin"></div>
     <main class="flex-1 p-4 sm:p-6 pb-24 lg:pb-6 overflow-y-auto space-y-5 sm:space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
