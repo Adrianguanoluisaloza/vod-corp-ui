@@ -431,9 +431,14 @@ async function loadHomeScreen() {
           card.className = 'card overflow-hidden cursor-pointer hover:border-foreground/30 transition-all group';
           card.onclick = () => playVideo(p.video_id);
 
+          const thumbHtml = p.miniatura_url
+            ? `<img src="${escapeHTML(p.miniatura_url)}" alt="${escapeHTML(p.titulo)}" class="w-full h-full object-cover" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+               <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:none"></span>`
+            : `<span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>`;
+
           card.innerHTML = `
-            <div class="aspect-video relative flex items-center justify-center bg-muted">
-              <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>
+            <div class="aspect-video relative flex items-center justify-center bg-muted overflow-hidden">
+              ${thumbHtml}
               <span class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-background/80">${formatDuration(p.duracion_seg)}</span>
               <div class="absolute bottom-0 left-0 right-0">
                 <div class="progress-track" style="border-radius:0">
@@ -507,9 +512,14 @@ async function loadCatalogScreen(page = 1) {
           card.className = 'card overflow-hidden cursor-pointer hover:border-foreground/30 transition-all group';
           card.onclick = () => playVideo(v.id);
 
+          const thumbHtml = v.miniatura_url
+            ? `<img src="${escapeHTML(v.miniatura_url)}" alt="${escapeHTML(v.titulo)}" class="w-full h-full object-cover" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+               <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:none"></span>`
+            : `<span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>`;
+
           card.innerHTML = `
-            <div class="aspect-video relative flex items-center justify-center bg-muted">
-              <span data-icon="video" class="opacity-30 group-hover:opacity-60 transition-opacity" style="display:flex"></span>
+            <div class="aspect-video relative flex items-center justify-center bg-muted overflow-hidden">
+              ${thumbHtml}
               <span class="absolute top-2 left-2"><span class="badge badge-secondary">${escapeHTML(v.categoria)}</span></span>
               <span class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-background/80">${formatDuration(v.duracion_seg)}</span>
             </div>
@@ -587,6 +597,16 @@ function stopPlayer() {
   }
   const videoEl = document.getElementById('vod-player');
   if (videoEl) {
+    // Adenda 5b punto 1: en stopPlayer(), ANTES de pausar, leer currentTime, enviar progress y quitar handlers
+    const curPos = Math.floor(videoEl.currentTime) || 0;
+    if (activeVideoId && curPos > 0) {
+      window.api.sendAnalytics(activeVideoId, 'progress', curPos);
+    }
+    // Desvincular handlers para no disparar eventos duplicados al pausar
+    videoEl.onplay = null;
+    videoEl.onpause = null;
+    videoEl.onended = null;
+    videoEl.ontimeupdate = null;
     videoEl.pause();
     videoEl.removeAttribute('src');
     videoEl.load();
@@ -652,40 +672,69 @@ async function playVideo(videoId) {
         videoEl.play().catch(() => {});
       });
 
+      let networkRetryCount = 0;
+      let mediaRetryCount = 0;
+      const MAX_RETRIES = 3;
+
       hlsInstance.on(Hls.Events.ERROR, function(event, data) {
         if (data.fatal) {
           console.warn('[HLS Fatal Error]', data.type, data.details);
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
               if (data.response && data.response.code === 401) {
+                stopPlayer();
                 window.onUnauthorized();
               } else if (data.response && data.response.code === 403) {
+                stopPlayer();
                 showToast('Acceso denegado al streaming', 'error');
+              } else if (networkRetryCount < MAX_RETRIES) {
+                // Adenda 5b punto 2: Reintento con backoff exponencial
+                networkRetryCount++;
+                const delayMs = Math.pow(2, networkRetryCount) * 1000;
+                console.log(`Reintentando carga HLS (${networkRetryCount}/${MAX_RETRIES}) en ${delayMs}ms...`);
+                setTimeout(() => {
+                  if (hlsInstance) hlsInstance.startLoad();
+                }, delayMs);
               } else {
-                hlsInstance.startLoad();
+                stopPlayer();
+                if (hlsErrorEl) {
+                  hlsErrorEl.textContent = 'Error persistente de red al cargar el video. Por favor verifica tu conexión.';
+                  hlsErrorEl.classList.remove('hidden');
+                }
+                showToast('Error de red persistente al cargar el video.', 'error');
               }
               break;
             case Hls.ErrorTypes.MEDIA_ERROR:
-              hlsInstance.recoverMediaError();
+              if (mediaRetryCount < MAX_RETRIES) {
+                mediaRetryCount++;
+                console.log(`Recuperando error de medio HLS (${mediaRetryCount}/${MAX_RETRIES})...`);
+                hlsInstance.recoverMediaError();
+              } else {
+                stopPlayer();
+                if (hlsErrorEl) {
+                  hlsErrorEl.textContent = 'Error irrecuperable en el formato del video multimedia.';
+                  hlsErrorEl.classList.remove('hidden');
+                }
+                showToast('Error al decodificar el video.', 'error');
+              }
               break;
             default:
               stopPlayer();
-              if (hlsErrorEl) hlsErrorEl.classList.remove('hidden');
+              if (hlsErrorEl) {
+                hlsErrorEl.textContent = 'No fue posible inicializar la reproducción del video.';
+                hlsErrorEl.classList.remove('hidden');
+              }
               break;
           }
         }
       });
-    } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
-      // Soporte nativo para Safari iOS/macOS
-      videoEl.src = playlistUrl;
-      videoEl.addEventListener('loadedmetadata', function() {
-        if (resumePos > 0 && duracion > 0 && resumePos < duracion) {
-          videoEl.currentTime = resumePos;
-        }
-        videoEl.play().catch(() => {});
-      }, { once: true });
     } else {
-      if (hlsErrorEl) hlsErrorEl.classList.remove('hidden');
+      // Adenda 5b punto 4: Fallback nativo de Safari no puede enviar Authorization
+      // Reemplazado por mensaje claro en vez de intentar reproducir sin token y fallar con 401.
+      if (hlsErrorEl) {
+        hlsErrorEl.textContent = 'Tu navegador no soporta streaming protegido con Hls.js. Por favor actualiza a un navegador moderno (Safari en iOS 17.1+, Chrome, Edge o Firefox).';
+        hlsErrorEl.classList.remove('hidden');
+      }
       return;
     }
 
@@ -736,8 +785,11 @@ function setupPlayerHeartbeat(videoEl, videoId) {
       clearInterval(heartbeatInterval);
       heartbeatInterval = null;
     }
-    window.api.sendAnalytics(videoId, 'pause', videoEl.currentTime);
-    updatePlayerProgressBox(videoEl.currentTime, videoEl.duration);
+    const curPos = Math.floor(videoEl.currentTime) || 0;
+    // Adenda 5b punto 1: en onpause enviar también progress con la posición actual (además del pause)
+    window.api.sendAnalytics(videoId, 'progress', curPos);
+    window.api.sendAnalytics(videoId, 'pause', curPos);
+    updatePlayerProgressBox(curPos, videoEl.duration);
   };
 
   videoEl.onended = () => {
