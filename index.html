@@ -282,10 +282,10 @@
         </div>
         <blockquote>
           <p class="text-xl font-medium leading-relaxed">
-            "Plataforma privada de video bajo demanda para 5.000 colaboradores en 15 países. Capacitaciones, comunicaciones y eventos con streaming HLS adaptativo de alta concurrencia."
+            "Plataforma privada de comunicación audiovisual y capacitación para 5.000 colaboradores en 15 países. Acceso ágil y seguro a contenidos corporativos de alta definición."
           </p>
           <footer class="mt-6 text-sm" style="color:hsl(var(--muted-foreground))">
-            Grupo 4 · Proyecto VOD Empresarial Seguro
+            Neoroot Enterprise · Red Privada de Aprendizaje y Comunicación
           </footer>
         </blockquote>
       </div>
@@ -299,8 +299,8 @@
           <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">países</p>
         </div>
         <div class="card p-4 text-center">
-          <p class="text-2xl font-black">HLS</p>
-          <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">adaptativo</p>
+          <p class="text-2xl font-black">HD</p>
+          <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">Multi-calidad</p>
         </div>
       </div>
     </div>
@@ -330,7 +330,7 @@
           <button type="submit" id="login-submit" class="btn btn-default w-full">Iniciar sesión</button>
         </form>
 
-        <p class="text-center text-xs" style="color:hsl(var(--muted-foreground))">Plataforma de uso interno · acceso protegido por JWT y Nginx</p>
+        <p class="text-center text-xs" style="color:hsl(var(--muted-foreground))">Plataforma de uso interno · Conexión cifrada y acceso seguro</p>
       </div>
     </div>
   </div>
@@ -371,17 +371,24 @@
         <h2 class="text-base font-semibold mb-3">Tus bibliotecas</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div class="card p-5 cursor-pointer hover:border-foreground/30 transition-all" onclick="show('catalog')">
-            <div class="flex items-start justify-between mb-3"><span class="text-2xl">🎓</span><span class="badge badge-secondary text-xs">Principal</span></div>
+            <div class="flex items-start justify-between mb-3">
+              <span class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center" data-icon="graduationCap"></span>
+              <span class="badge badge-secondary text-xs">Principal</span>
+            </div>
             <h3 class="font-semibold text-sm mb-1">Capacitación</h3>
             <p class="text-xs" style="color:hsl(var(--muted-foreground))">Módulos obligatorios y técnicos</p>
           </div>
           <div class="card p-5 cursor-pointer hover:border-foreground/30 transition-all" onclick="show('catalog')">
-            <div class="flex items-start justify-between mb-3"><span class="text-2xl">📢</span></div>
+            <div class="flex items-start justify-between mb-3">
+              <span class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center" data-icon="megaphone"></span>
+            </div>
             <h3 class="font-semibold text-sm mb-1">Comunicaciones</h3>
             <p class="text-xs" style="color:hsl(var(--muted-foreground))">Anuncios de dirección general</p>
           </div>
           <div class="card p-5 cursor-pointer hover:border-foreground/30 transition-all" onclick="show('catalog')">
-            <div class="flex items-start justify-between mb-3"><span class="text-2xl">📅</span></div>
+            <div class="flex items-start justify-between mb-3">
+              <span class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center" data-icon="calendar"></span>
+            </div>
             <h3 class="font-semibold text-sm mb-1">Eventos</h3>
             <p class="text-xs" style="color:hsl(var(--muted-foreground))">All Hands y convenciones</p>
           </div>
@@ -462,7 +469,7 @@
         <video id="vod-player" class="w-full h-full object-contain" controls playsinline></video>
         <div id="player-hls-error" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 text-center text-red-400 hidden">
           <span data-icon="alertCircle" class="w-10 h-10 mb-2"></span>
-          <p class="text-sm font-semibold">Tu navegador no soporta streaming HLS.</p>
+          <p class="text-sm font-semibold">Tu navegador no puede reproducir este video.</p>
           <p class="text-xs text-muted-foreground mt-1">Por favor utiliza un navegador compatible como Chrome, Edge o Safari.</p>
         </div>
       </div>
@@ -475,7 +482,7 @@
             <div class="flex flex-wrap items-center gap-2 mt-2">
               <span id="player-category" class="badge badge-secondary">Capacitación</span>
               <span id="player-duration" class="text-xs" style="color:hsl(var(--muted-foreground))">-- min</span>
-              <span class="badge badge-warning">HLS 720p/360p</span>
+              <span class="badge badge-secondary">HD 720p · Calidad Automática</span>
             </div>
           </div>
           <p id="player-description" class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">Descripción del video corporativo.</p>

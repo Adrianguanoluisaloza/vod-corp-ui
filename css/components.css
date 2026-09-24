@@ -95,25 +95,62 @@ body {
 .badge-destructive { background: hsl(0 62.8% 50% / 0.15); color: hsl(0 72% 65%); border-color: hsl(0 62.8% 50% / 0.3); }
 
 /* ── Input / Select / Textarea ── */
-.input {
-  background: transparent;
-  border: 1px solid hsl(var(--input));
+.input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--input)) !important;
   border-radius: calc(var(--radius) - 2px);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   font-family: inherit;
-  color: hsl(var(--foreground));
+  color: hsl(var(--foreground)) !important;
   width: 100%;
   outline: none;
-  transition: border 0.15s, box-shadow 0.15s;
+  transition: border 0.15s, box-shadow 0.15s, background-color 0.15s;
 }
-.input::placeholder { color: hsl(var(--muted-foreground)); }
-.input:focus {
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.15);
+.input::placeholder,
+input::placeholder { color: hsl(var(--muted-foreground)); }
+
+.input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--ring)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.15) !important;
 }
+
 select.input { cursor: pointer; background: hsl(var(--background)); }
 textarea.input { resize: none; }
+
+/* ── Fix Autofill de navegadores (Chrome, Edge, Safari) en modo oscuro ── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
+  box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  caret-color: hsl(var(--foreground)) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #09090b inset !important;
+  box-shadow: 0 0 0 1000px #09090b inset !important;
+  -webkit-text-fill-color: #fafafa !important;
+  caret-color: #fafafa !important;
+}
 
 /* ── Separator ── */
 .separator { height: 1px; background: hsl(var(--border)); }

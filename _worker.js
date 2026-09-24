@@ -2,8 +2,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Proxy API, HLS and Health requests to the Azure VM backend via hostname
-    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/hls/') || url.pathname === '/health') {
+    // Proxy API, HLS, Thumbs and Health requests to the Azure VM backend via hostname
+    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/hls/') || url.pathname.startsWith('/thumbs/') || url.pathname === '/health') {
       const backendUrl = `http://40.70.241.221.nip.io${url.pathname}${url.search}`;
 
       const headers = new Headers(request.headers);
